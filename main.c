@@ -20,15 +20,6 @@ static void repl() {
   }
 }
 
-static void runFile(const char* path) {
-  char* source = readFile(path);
-  InterpretResult result = interpret(source);
-  free(source); 
-
-  if (result == INTERPRET_COMPILE_ERROR) exit(65);
-  if (result == INTERPRET_RUNTIME_ERROR) exit(70);
-}
-
 static char* readFile(const char* path) {
   FILE* file = fopen(path, "rb");
   if (file == NULL) {
@@ -57,6 +48,15 @@ static char* readFile(const char* path) {
   return buffer;
 }
 
+static void runFile(const char* path) {
+  char* source = readFile(path);
+  InterpretResult result = interpret(source);
+  free(source); 
+
+  if (result == INTERPRET_COMPILE_ERROR) exit(65);
+  if (result == INTERPRET_RUNTIME_ERROR) exit(70);
+}
+
 int main(int argc, const char* argv[]) {
     initVM();
     //Chunk chunk;
@@ -82,12 +82,11 @@ int main(int argc, const char* argv[]) {
     
     if (argc == 1) {
       repl();
-      } else if (argc == 2) {
-        runFile(argv[1]);
-      } else {
-        fprintf(stderr, "Usage: clox [path]\n");
-        exit(64);
-      }
+    } else if (argc == 2) {
+      runFile(argv[1]);
+    } else {
+      fprintf(stderr, "Usage: clox [path]\n");
+      exit(64);
     }
     freeVM();
     //freeChunk(&chunk);
