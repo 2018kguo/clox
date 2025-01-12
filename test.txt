@@ -1,8 +1,5 @@
-{
-  var a = "outer";
-  {
-    var a = "inner";
-    print a;
-  }
-  print a;
+fun areWeHavingItYet() {
+  print "Yes we are!";
 }
+
+print areWeHavingItYet;
