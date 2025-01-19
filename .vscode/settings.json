@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "__assert": "c",
+        "typeinfo": "c",
+        "value.h": "c"
+    }
+}
