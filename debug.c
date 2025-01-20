@@ -2,6 +2,7 @@
 
 #include "chunk.h"
 #include "debug.h"
+#include "object.h"
 #include "value.h"
 
 void disassembleChunk(Chunk *chunk, const char *name) {
@@ -30,7 +31,7 @@ static int byteInstruction(const char* name, Chunk* chunk,
                            int offset) {
   uint8_t slot = chunk->code[offset + 1];
   printf("%-16s %4d\n", name, slot);
-  return offset + 2; 
+  return offset + 2;
 }
 
 static int jumpInstruction(const char* name, int sign,
@@ -50,7 +51,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
   } else {
     printf("%4d ", chunk->lines[offset]);
   }
-  
+
   uint8_t instruction = chunk->code[offset];
   switch (instruction) {
     case OP_CONSTANT:
@@ -67,6 +68,24 @@ int disassembleInstruction(Chunk *chunk, int offset) {
       return jumpInstruction("OP_LOOP", -1, chunk, offset);
     case OP_CALL:
       return byteInstruction("OP_CALL", chunk, offset);
+    case OP_CLOSURE: {
+      offset++;
+      uint8_t constant = chunk->code[offset++];
+      printf("%-16s %4d ", "OP_CLOSURE", constant);
+      printValue(chunk->constants.values[constant]);
+      printf("\n");
+
+      ObjFunction* function = AS_FUNCTION(
+        chunk->constants.values[constant]);
+      for (int j = 0; j < function->upvalueCount; j++) {
+        int isLocal = chunk->code[offset++];
+        int index = chunk->code[offset++];
+        printf("%04d      |                     %s %d\n",
+            offset - 2, isLocal ? "local" : "upvalue", index);
+      }
+
+      return offset;
+    }
     case OP_RETURN:
       return simpleInstruction("OP_RETURN", offset);
     case OP_NIL:
@@ -88,6 +107,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
                                  offset);
     case OP_SET_GLOBAL:
       return constantInstruction("OP_SET_GLOBAL", chunk, offset);
+    case OP_GET_UPVALUE:
+      return byteInstruction("OP_GET_UPVALUE", chunk, offset);
+    case OP_SET_UPVALUE:
+      return byteInstruction("OP_SET_UPVALUE", chunk, offset);
     case OP_EQUAL:
       return simpleInstruction("OP_EQUAL", offset);
     case OP_GREATER:
@@ -109,4 +132,3 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     return offset + 1;
   }
 }
-
